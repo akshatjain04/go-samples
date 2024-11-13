@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>compression: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/TheAlgorithms/Go/compression/huffmancoding.go (6.7%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">// huffman.go
+// description: Implements Huffman compression, encoding and decoding
+// details:
+// We implement the linear-time 2-queue method described here https://en.wikipedia.org/wiki/Huffman_coding.
+// It assumes that the list of symbol-frequencies is sorted.
+// author(s) [pedromsrocha](https://github.com/pedromsrocha)
+// see also huffmancoding_test.go
+
+package compression
+
+import "fmt"
+
+// A Node of an Huffman tree, which can either be a leaf or an internal node.
+// Each node has a weight.
+// A leaf node has an associated symbol, but no children (i.e., left == right == nil).
+// A parent node has a left and right child and no symbol (i.e., symbol == -1).
+type Node struct {
+        left   *Node
+        right  *Node
+        symbol rune
+        weight int
+}
+
+// A SymbolFreq is a pair of a symbol and its associated frequency.
+type SymbolFreq struct {
+        Symbol rune
+        Freq   int
+}
+
+// HuffTree returns the root Node of the Huffman tree by compressing listfreq.
+// The compression produces the most optimal code lengths, provided listfreq is ordered,
+// i.e.: listfreq[i] &lt;= listfreq[j], whenever i &lt; j.
+func HuffTree(listfreq []SymbolFreq) (*Node, error) <span class="cov0" title="0">{
+        if len(listfreq) &lt; 1 </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("huffman coding: HuffTree : calling method with empty list of symbol-frequency pairs")
+        }</span>
+        <span class="cov0" title="0">q1 := make([]Node, len(listfreq))
+        q2 := make([]Node, 0, len(listfreq))
+        for i, x := range listfreq </span><span class="cov0" title="0">{ // after the loop, q1 is a slice of leaf nodes representing listfreq
+                q1[i] = Node{left: nil, right: nil, symbol: x.Symbol, weight: x.Freq}
+        }</span>
+        //loop invariant: q1, q2 are ordered by increasing weights
+        <span class="cov0" title="0">for len(q1)+len(q2) &gt; 1 </span><span class="cov0" title="0">{
+                var node1, node2 Node
+                node1, q1, q2 = least(q1, q2)
+                node2, q1, q2 = least(q1, q2)
+                node := Node{left: &amp;node1, right: &amp;node2,
+                        symbol: -1, weight: node1.weight + node2.weight}
+                q2 = append(q2, node)
+        }</span>
+        <span class="cov0" title="0">if len(q1) == 1 </span><span class="cov0" title="0">{ // returns the remaining node in q1, q2
+                return &amp;q1[0], nil
+        }</span>
+        <span class="cov0" title="0">return &amp;q2[0], nil</span>
+}
+
+// least removes the node with lowest weight from q1, q2.
+// It returns the node with lowest weight and the slices q1, q2 after the update.
+func least(q1 []Node, q2 []Node) (Node, []Node, []Node) <span class="cov0" title="0">{
+        if len(q1) == 0 </span><span class="cov0" title="0">{
+                return q2[0], q1, q2[1:]
+        }</span>
+        <span class="cov0" title="0">if len(q2) == 0 </span><span class="cov0" title="0">{
+                return q1[0], q1[1:], q2
+        }</span>
+        <span class="cov0" title="0">if q1[0].weight &lt;= q2[0].weight </span><span class="cov0" title="0">{
+                return q1[0], q1[1:], q2
+        }</span>
+        <span class="cov0" title="0">return q2[0], q1, q2[1:]</span>
+}
+
+// HuffEncoding recursively traverses the Huffman tree pointed by node to obtain
+// the map codes, that associates a rune with a slice of booleans.
+// Each code is prefixed by prefix and left and right children are labelled with
+// the booleans false and true, respectively.
+func HuffEncoding(node *Node, prefix []bool, codes map[rune][]bool) <span class="cov0" title="0">{
+        if node.symbol != -1 </span><span class="cov0" title="0">{ //base case
+                codes[node.symbol] = prefix
+                return
+        }</span>
+        // inductive step
+        <span class="cov0" title="0">prefixLeft := make([]bool, len(prefix))
+        copy(prefixLeft, prefix)
+        prefixLeft = append(prefixLeft, false)
+        HuffEncoding(node.left, prefixLeft, codes)
+        prefixRight := make([]bool, len(prefix))
+        copy(prefixRight, prefix)
+        prefixRight = append(prefixRight, true)
+        HuffEncoding(node.right, prefixRight, codes)</span>
+}
+
+// HuffEncode encodes the string in by applying the mapping defined by codes.
+func HuffEncode(codes map[rune][]bool, in string) []bool <span class="cov0" title="0">{
+        out := make([]bool, 0)
+        for _, s := range in </span><span class="cov0" title="0">{
+                out = append(out, codes[s]...)
+        }</span>
+        <span class="cov0" title="0">return out</span>
+}
+
+// HuffDecode recursively decodes the binary code in, by traversing the Huffman compression tree pointed by root.
+// current stores the current node of the traversing algorithm.
+// out stores the current decoded string.
+func HuffDecode(root, current *Node, in []bool, out string) string <span class="cov8" title="1">{
+        if current.symbol != -1 </span><span class="cov8" title="1">{
+                out += string(current.symbol)
+                return HuffDecode(root, root, in, out)
+        }</span>
+        <span class="cov0" title="0">if len(in) == 0 </span><span class="cov0" title="0">{
+                return out
+        }</span>
+        <span class="cov0" title="0">if in[0] </span><span class="cov0" title="0">{
+                return HuffDecode(root, current.right, in[1:], out)
+        }</span>
+        <span class="cov0" title="0">return HuffDecode(root, current.left, in[1:], out)</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
