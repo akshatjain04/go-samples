@@ -1,0 +1,7 @@
+METHOD^|^URL^|^REQ_HEADERS^|^REQ_BODY^|^RESPONSE_CODE^|^RESPONSE_BODY
+post^|^https://petstore.swagger.io/v2/pet^|^{"Authorization": "Bearer <OAuth2 Token>"}^|^{ "id": "", "category": { "id": "", "name": "" }, "name": "", "photoUrls": [], "tags": [], "status": "" }^|^405^|^{ "code": 405, "type": "unknown", "message": "Invalid input" }
+get^|^https://petstore.swagger.io/v2/pet/-1^|^{}^|^{}^|^404^|^{ "code": 404, "type": "unknown", "message": "Pet not found" }
+get^|^https://petstore.swagger.io/v2/store/order/0^|^{}^|^{}^|^400^|^{ "code": 400, "type": "unknown", "message": "Invalid ID supplied" }
+get^|^https://petstore.swagger.io/v2/store/order/11^|^{}^|^{}^|^400^|^{ "code": 400, "type": "unknown", "message": "Invalid ID supplied" }
+post^|^https://petstore.swagger.io/v2/user/createWithList^|^{}^|^{ "id": "", "username": "", "firstName": "", "lastName": "", "email": "", "password": "", "phone": "", "userStatus": "" }^|^200^|^{ "message": "successful operation" }
+get^|^https://petstore.swagger.io/v2/user/login?username=invalid&password=invalid^|^{}^|^{}^|^400^|^{ "code": 400, "type": "unknown", "message": "Invalid username/password supplied" }

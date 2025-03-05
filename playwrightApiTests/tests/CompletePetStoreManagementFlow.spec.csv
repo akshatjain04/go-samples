@@ -1,0 +1,15 @@
+METHOD^|^URL^|^REQ_HEADERS^|^REQ_BODY^|^RESPONSE_CODE^|^RESPONSE_BODY
+post^|^https://petstore.swagger.io/v2/user^|^^|^{ "id": 0, "username": "testuser1", "firstName": "Test", "lastName": "User", "email": "test@email.com", "password": "pass123", "phone": "1234567890", "userStatus": 0 }^|^200^|^{}
+get^|^https://petstore.swagger.io/v2/user/login?username=testuser1&password=pass123^|^^|^{}^|^200^|^{ "id": 0, "username": "testuser1", "firstName": "Test", "lastName": "User", "email": "test@email.com", "password": "pass123", "phone": "1234567890", "userStatus": 0 }
+post^|^https://petstore.swagger.io/v2/pet^|^^|^{ "id": 0, "category": { "id": 0, "name": "Cat" }, "name": "Fluffy", "photoUrls": [ "" ], "tags": [ { "id": 0, "name": "" } ], "status": "available" }^|^200^|^{}
+post^|^https://petstore.swagger.io/v2/pet/0/uploadImage^|^^|^{ "additionalMetadata": "", "file": "" }^|^200^|^{ "code": 0, "type": "", "message": "" }
+put^|^https://petstore.swagger.io/v2/pet^|^^|^{ "id": 0, "category": { "id": 0, "name": "" }, "name": "Fluffy", "photoUrls": [ "" ], "tags": [ { "id": 0, "name": "" } ], "status": "pending" }^|^200^|^{}
+get^|^https://petstore.swagger.io/v2/pet/findByStatus?status=pending^|^^|^{}^|^200^|^[ { "id": 0, "category": { "id": 0, "name": "" }, "name": "Fluffy", "photoUrls": [ "" ], "tags": [ { "id": 0, "name": "" } ], "status": "pending" } ]
+get^|^https://petstore.swagger.io/v2/pet/findByTags?tags=friendly^|^^|^{}^|^200^|^[ { "id": 0, "category": { "id": 0, "name": "" }, "name": "", "photoUrls": [ "" ], "tags": [ { "id": 0, "name": "friendly" } ], "status": "" } ]
+get^|^https://petstore.swagger.io/v2/store/inventory^|^^|^{}^|^200^|^{}
+post^|^https://petstore.swagger.io/v2/store/order^|^^|^{ "id": 0, "petId": 0, "quantity": 1, "shipDate": "2023-04-14T00:00:00.000Z", "status": "placed", "complete": false }^|^200^|^{}
+get^|^https://petstore.swagger.io/v2/store/order/0^|^^|^{}^|^200^|^{ "id": 0, "petId": 0, "quantity": 1, "shipDate": "2023-04-14T00:00:00.000Z", "status": "placed", "complete": false }
+delete^|^https://petstore.swagger.io/v2/store/order/0^|^^|^{}^|^200^|^{}
+delete^|^https://petstore.swagger.io/v2/pet/0^|^^|^{}^|^200^|^{}
+delete^|^https://petstore.swagger.io/v2/user/testuser1^|^^|^{}^|^200^|^{}
+get^|^https://petstore.swagger.io/v2/user/logout^|^^|^{}^|^200^|^{}
