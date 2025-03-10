@@ -66,6 +66,8 @@ Execution:
 
 Validation:
   The assertion is based on the principle that elements in different sets have different roots. This test is important as it checks the function's ability to correctly identify the set to which an element belongs.
+
+roost_feedback [3/11/2025, 3:24:02 AM]:Iterate the tests in this way:\r\n```\r\nfor _, tt := range tests {\r\n\t\tt.Run(tt.name, func(t *testing.T) {\r\n\t\t\tu := tt.setup()\r\n\t\t\tgot, err := u.Find(tt.input)\r\n\t\t\tif (err != nil) != tt.expectErr {\r\n\t\t\t\tt.Errorf(Find() error = %v, expectErr %v, err, tt.expectErr)\r\n\t\t\t\treturn\r\n\t\t\t}\r\n\t\t\tif got != tt.want {\r\n\t\t\t\tt.Errorf(Find() got = %v, want %v, got, tt.want)\r\n\t\t\t}\r\n\t\t})\r\n\t}\r\n```
 */
 
 // ********RoostGPT********
