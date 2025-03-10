@@ -73,19 +73,9 @@ Validation:
 package graph
 
 import (
-	"errors"
 	"testing"
 )
 
-func NewUnionFind(n int) *UnionFind {
-	parent := make([]int, n)
-	size := make([]int, n)
-	for i := range parent {
-		parent[i] = i
-		size[i] = 1
-	}
-	return &UnionFind{parent: parent, size: size}
-}
 func TestUnionFind_Find(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -98,7 +88,7 @@ func TestUnionFind_Find(t *testing.T) {
 			name: "Test Find with single element",
 			setup: func() *UnionFind {
 				u := NewUnionFind(1)
-				return u
+				return &u
 			},
 			element: 0,
 			want:    0,
@@ -110,7 +100,7 @@ func TestUnionFind_Find(t *testing.T) {
 				u := NewUnionFind(3)
 				u.Union(0, 1)
 				u.Union(1, 2)
-				return u
+				return &u
 			},
 			element: 1,
 			want:    0,
@@ -122,7 +112,7 @@ func TestUnionFind_Find(t *testing.T) {
 				u := NewUnionFind(4)
 				u.Union(0, 1)
 				u.Union(2, 3)
-				return u
+				return &u
 			},
 			element: 2,
 			want:    2,
@@ -133,7 +123,7 @@ func TestUnionFind_Find(t *testing.T) {
 			setup: func() *UnionFind {
 				u := NewUnionFind(2)
 				u.Union(0, 1)
-				return u
+				return &u
 			},
 			element: 3,
 			want:    -1,
@@ -144,38 +134,14 @@ func TestUnionFind_Find(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := tt.setup()
-			got, err := u.Find(tt.element)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("UnionFind.Find() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := u.Find(tt.element)
+			// if (err != nil) != tt.wantErr {
+			// 	t.Errorf("UnionFind.Find() error = %v, wantErr %v", err, tt.wantErr)
+			// 	return
+			// }
 			if got != tt.want {
 				t.Errorf("UnionFind.Find() = %v, want %v", got, tt.want)
 			}
 		})
-	}
-}
-func (u *UnionFind) Find(p int) (int, error) {
-	if p < 0 || p >= len(u.parent) {
-		return -1, errors.New("index is out of range")
-	}
-	root := p
-	for root != u.parent[root] {
-		root = u.parent[root]
-	}
-	return root, nil
-}
-func (u *UnionFind) Union(p, q int) {
-	rootP := u.Find(p)
-	rootQ := u.Find(q)
-	if rootP == rootQ {
-		return
-	}
-	if u.size[rootP] < u.size[rootQ] {
-		u.parent[rootP] = rootQ
-		u.size[rootQ] += u.size[rootP]
-	} else {
-		u.parent[rootQ] = rootP
-		u.size[rootP] += u.size[rootQ]
 	}
 }

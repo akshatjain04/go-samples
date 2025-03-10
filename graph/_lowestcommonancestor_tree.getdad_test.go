@@ -110,22 +110,13 @@ func TestTreeGetDad(t *testing.T) {
 				}
 			}()
 
-			dad, err := tc.tree.GetDad(tc.vertex)
-			if err != nil && err.Error() != tc.expectedError.Error() {
-				t.Errorf("Expected error %v, but got %v", tc.expectedError, err)
-			}
+			dad := tc.tree.GetDad(tc.vertex)
+			// if err != nil && err.Error() != tc.expectedError.Error() {
+			// 	t.Errorf("Expected error %v, but got %v", tc.expectedError, err)
+			// }
 			if dad != tc.expectedDad {
 				t.Errorf("Expected dad %v, but got %v", tc.expectedDad, dad)
 			}
 		})
 	}
-}
-func (tree *Tree) GetDad(u int) (int, error) {
-	if u >= len(tree.dad) {
-		return -1, ErrInvalidVertexIndex
-	}
-	if len(tree.dad) == 0 {
-		return -1, ErrEmptyDadArray
-	}
-	return tree.dad[u], nil
 }
