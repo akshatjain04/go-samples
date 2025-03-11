@@ -112,6 +112,6 @@ func kthNumber(nums []int, index int) (int, error) {
 	if index < 0 || index >= len(nums) {
 		return -1, search.ErrNotFound
 	}
-	sort.Ints(nums)
+	sort.Insertion(nums)
 	return nums[index], nil
 }

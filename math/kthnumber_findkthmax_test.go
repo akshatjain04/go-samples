@@ -88,7 +88,7 @@ func FindKthMax(nums []int, k int) (int, error) {
 	if k > len(nums) || k <= 0 {
 		return -1, search.ErrNotFound
 	}
-	sort.Ints(nums)
+	sort.Insertion(nums)
 	index := len(nums) - k
 	return nums[index], nil
 }
