@@ -1,0 +1,1238 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>graph: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/TheAlgorithms/Go/graph/articulationpoints.go (100.0%)</option>
+				
+				<option value="file1">github.com/TheAlgorithms/Go/graph/bellmanford.go (100.0%)</option>
+				
+				<option value="file2">github.com/TheAlgorithms/Go/graph/breadthfirstsearch.go (100.0%)</option>
+				
+				<option value="file3">github.com/TheAlgorithms/Go/graph/coloring/backtracking.go (90.5%)</option>
+				
+				<option value="file4">github.com/TheAlgorithms/Go/graph/coloring/bfs.go (100.0%)</option>
+				
+				<option value="file5">github.com/TheAlgorithms/Go/graph/coloring/bipartite.go (100.0%)</option>
+				
+				<option value="file6">github.com/TheAlgorithms/Go/graph/coloring/graph.go (100.0%)</option>
+				
+				<option value="file7">github.com/TheAlgorithms/Go/graph/coloring/greedy.go (94.1%)</option>
+				
+				<option value="file8">github.com/TheAlgorithms/Go/graph/cycle.go (93.2%)</option>
+				
+				<option value="file9">github.com/TheAlgorithms/Go/graph/depthfirstsearch.go (96.6%)</option>
+				
+				<option value="file10">github.com/TheAlgorithms/Go/graph/dijkstra.go (100.0%)</option>
+				
+				<option value="file11">github.com/TheAlgorithms/Go/graph/floydwarshall.go (100.0%)</option>
+				
+				<option value="file12">github.com/TheAlgorithms/Go/graph/graph.go (100.0%)</option>
+				
+				<option value="file13">github.com/TheAlgorithms/Go/graph/kruskal.go (100.0%)</option>
+				
+				<option value="file14">github.com/TheAlgorithms/Go/graph/lowestcommonancestor.go (100.0%)</option>
+				
+				<option value="file15">github.com/TheAlgorithms/Go/graph/topological.go (100.0%)</option>
+				
+				<option value="file16">github.com/TheAlgorithms/Go/graph/unionfind.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package graph
+
+import "github.com/TheAlgorithms/Go/math/min"
+
+type apHelper struct {
+        is_ap              []bool
+        visited            []bool
+        child_cnt          []int
+        discovery_time     []int
+        earliest_discovery []int
+}
+
+// ArticulationPoint is a function to identify articulation points in a graph.
+// The function takes the graph as an argument and returns a boolean slice
+// which indicates whether a vertex is an articulation point or not.
+// Worst Case Time Complexity: O(|V| + |E|)
+// Auxiliary Space: O(|V|)
+// reference: https://en.wikipedia.org/wiki/Biconnected_component and https://cptalks.quora.com/Cut-Vertex-Articulation-point
+func ArticulationPoint(graph *Graph) []bool <span class="cov8" title="1">{
+        // time variable to keep track of the time of discovery_time of a vertex
+        time := 0
+
+        //initialize all the variables
+        apHelperInstance := &amp;apHelper{
+                is_ap:     make([]bool, graph.vertices),
+                visited:   make([]bool, graph.vertices),
+                child_cnt: make([]int, graph.vertices),
+                // integer slice to store the discovery time of a vertex as we traverse
+                // the graph in a depth first manner
+                discovery_time: make([]int, graph.vertices),
+                // integer slice to store the earliest discovered vertex reachable from a vertex
+                earliest_discovery: make([]int, graph.vertices),
+        }
+        articulationPointHelper(
+                apHelperInstance,
+                0,
+                -1,
+                &amp;time,
+                graph,
+        )
+
+        if apHelperInstance.child_cnt[0] == 1 </span><span class="cov8" title="1">{
+                // if the root has only one child, it is not an articulation point
+                apHelperInstance.is_ap[0] = false
+        }</span>
+
+        <span class="cov8" title="1">return apHelperInstance.is_ap</span>
+}
+
+// articulationPointHelper is a recursive function to traverse the graph
+// and mark articulation points. Based on the depth first search transversal
+// of the graph, however modified to keep track and update the
+// `child_cnt`, `discovery_time` and `earliest_discovery` slices defined above
+func articulationPointHelper(
+        apHelperInstance *apHelper,
+        vertex int,
+        parent int,
+        time *int,
+        graph *Graph,
+) <span class="cov8" title="1">{
+        apHelperInstance.visited[vertex] = true
+
+        // Mark the time of discovery of a vertex
+        // set the earliest discovery time to the discovered time
+        // increment the time
+        apHelperInstance.discovery_time[vertex] = *time
+        apHelperInstance.earliest_discovery[vertex] = apHelperInstance.discovery_time[vertex]
+        *time++
+
+        for next_vertex := range graph.edges[vertex] </span><span class="cov8" title="1">{
+                if next_vertex == parent </span><span class="cov8" title="1">{
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">if apHelperInstance.visited[next_vertex] </span><span class="cov8" title="1">{
+                        apHelperInstance.earliest_discovery[vertex] = min.Int(
+                                apHelperInstance.earliest_discovery[vertex],
+                                apHelperInstance.discovery_time[next_vertex],
+                        )
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">apHelperInstance.child_cnt[vertex]++
+                articulationPointHelper(
+                        apHelperInstance,
+                        next_vertex,
+                        vertex,
+                        time,
+                        graph,
+                )
+                apHelperInstance.earliest_discovery[vertex] = min.Int(
+                        apHelperInstance.earliest_discovery[vertex],
+                        apHelperInstance.earliest_discovery[next_vertex],
+                )
+                if apHelperInstance.earliest_discovery[next_vertex] &gt;= apHelperInstance.discovery_time[vertex] </span><span class="cov8" title="1">{
+                        apHelperInstance.is_ap[vertex] = true
+                }</span>
+
+        }
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">// The Bellman–Ford algorithm is an algorithm that computes shortest paths from a
+// single source vertex to all of the other vertices in a weighted durected graph.
+// It is slower than Dijkstra but capable of handling negative edge weights.
+// https://en.wikipedia.org/wiki/Bellman%E2%80%93Ford_algorithm
+// Implementation is based on the book 'Introduction to Algorithms' (CLRS)
+
+package graph
+
+import (
+        "errors"
+        "math"
+)
+
+func (g *Graph) BellmanFord(start, end int) (isReachable bool, distance int, err error) <span class="cov8" title="1">{
+        INF := math.Inf(1)
+        distances := make([]float64, g.vertices)
+
+        // Set all vertices to unreachable, initialize source
+        for i := 0; i &lt; g.vertices; i++ </span><span class="cov8" title="1">{
+                distances[i] = INF
+        }</span>
+        <span class="cov8" title="1">distances[start] = 0
+
+        // Making iterations equal to #vertices
+        for n := 0; n &lt; g.vertices; n++ </span><span class="cov8" title="1">{
+
+                // Looping over all edges
+                for u, adjacents := range g.edges </span><span class="cov8" title="1">{
+                        for v, weightUV := range adjacents </span><span class="cov8" title="1">{
+
+                                // If new shorter distance is found, update distance value (relaxation step)
+                                if newDistance := distances[u] + float64(weightUV); distances[v] &gt; newDistance </span><span class="cov8" title="1">{
+                                        distances[v] = newDistance
+                                }</span>
+                        }
+                }
+        }
+
+        // Check for negative weight cycle
+        <span class="cov8" title="1">for u, adjacents := range g.edges </span><span class="cov8" title="1">{
+                for v, weightUV := range adjacents </span><span class="cov8" title="1">{
+                        if newDistance := distances[u] + float64(weightUV); distances[v] &gt; newDistance </span><span class="cov8" title="1">{
+                                return false, -1, errors.New("negative weight cycle present")
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">return distances[end] != INF, int(distances[end]), nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package graph
+
+// BreadthFirstSearch is an algorithm for traversing and searching graph data structures.
+// It starts at an arbitrary node of a graph, and explores all of the neighbor nodes
+// at the present depth prior to moving on to the nodes at the next depth level.
+// Worst-case performance                         O(|V|+|E|)=O(b^{d})}O(|V|+|E|)=O(b^{d})
+// Worst-case space complexity                 O(|V|)=O(b^{d})}O(|V|)=O(b^{d})
+// reference: https://en.wikipedia.org/wiki/Breadth-first_search
+func BreadthFirstSearch(start, end, nodes int, edges [][]int) (isConnected bool, distance int) <span class="cov8" title="1">{
+        queue := make([]int, 0)
+        discovered := make([]int, nodes)
+        discovered[start] = 1
+        queue = append(queue, start)
+        for len(queue) &gt; 0 </span><span class="cov8" title="1">{
+                v := queue[0]
+                queue = queue[1:]
+                for i := 0; i &lt; len(edges[v]); i++ </span><span class="cov8" title="1">{
+                        if discovered[i] == 0 &amp;&amp; edges[v][i] &gt; 0 </span><span class="cov8" title="1">{
+                                if i == end </span><span class="cov8" title="1">{
+                                        return true, discovered[v]
+                                }</span>
+                                <span class="cov8" title="1">discovered[i] = discovered[v] + 1
+                                queue = append(queue, i)</span>
+                        }
+                }
+        }
+        <span class="cov8" title="1">return false, 0</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">// This file contains the graph coloring implementation using backtracking
+// Author(s): [Shivam](https://github.com/Shivam010)
+
+package coloring
+
+// ColorUsingBacktracking will return the Color of each vertex and the
+// total number of different colors used, using backtracking
+func (g *Graph) ColorUsingBacktracking() (map[int]Color, int) <span class="cov8" title="1">{
+        vertexColors := make(map[int]Color, g.vertices)
+        g.colorVertex(0, vertexColors)
+
+        colorsUsed := 0
+        for _, cr := range vertexColors </span><span class="cov8" title="1">{
+                if colorsUsed &lt; int(cr) </span><span class="cov8" title="1">{
+                        colorsUsed = int(cr)
+                }</span>
+        }
+        <span class="cov8" title="1">return vertexColors, colorsUsed</span>
+}
+
+// colorVertex will try to color provided vertex, v
+func (g *Graph) colorVertex(v int, color map[int]Color) bool <span class="cov8" title="1">{
+        // If all vertices are colored, the colors store will be completely filled.
+        if len(color) == g.vertices </span><span class="cov8" title="1">{
+                return true
+        }</span>
+
+        // As the upper bound of no. of colors is the no. of vertices in graph,
+        // try assigning each color to the vertex v
+        <span class="cov8" title="1">for cr := Color(1); cr &lt;= Color(g.vertices); cr++ </span><span class="cov8" title="1">{
+                // Use the color, cr for vertex, v if it is safe to use, by
+                // checking its neighbours
+                safe := true
+                for nb := range g.edges[v] </span><span class="cov8" title="1">{
+                        // cr, color is not safe if color of nb, crnb is not equal to cr
+                        if crnb, ok := color[nb]; ok &amp;&amp; crnb == cr </span><span class="cov8" title="1">{
+                                safe = false
+                                break</span>
+                        }
+                }
+                <span class="cov8" title="1">if safe </span><span class="cov8" title="1">{
+                        color[v] = cr
+                        if g.colorVertex(v+1, color) </span><span class="cov8" title="1">{
+                                return true
+                        }</span>
+                        <span class="cov0" title="0">delete(color, v)</span>
+                }
+        }
+        <span class="cov0" title="0">return false</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">// This file contains the graph coloring implementation using BFS
+// Author(s): [Shivam](https://github.com/Shivam010)
+
+package coloring
+
+import "container/list"
+
+// ColorUsingBFS will return the Color of each vertex and the
+// total number of different colors used, using BFS
+func (g *Graph) ColorUsingBFS() (map[int]Color, int) <span class="cov8" title="1">{
+        // Initially all vertices will have same color
+        vertexColors := make(map[int]Color, g.vertices)
+        for i := 0; i &lt; g.vertices; i++ </span><span class="cov8" title="1">{
+                vertexColors[i] = 1
+        }</span>
+
+        <span class="cov8" title="1">visited := make(map[int]struct{})
+        // Run BFS from each non-visited vertex
+        for i := 0; i &lt; g.vertices; i++ </span><span class="cov8" title="1">{
+                if _, ok := visited[i]; ok </span><span class="cov8" title="1">{
+                        continue</span>
+                }
+                <span class="cov8" title="1">visited[i] = struct{}{}
+
+                queue := list.New()
+                queue.PushBack(i)
+
+                for queue.Len() != 0 </span><span class="cov8" title="1">{
+                        // front vertex in the queue
+                        frontNode := queue.Front()
+                        front := frontNode.Value.(int)
+                        queue.Remove(frontNode)
+
+                        // Now, check all neighbours of front vertex, if they have same
+                        // color as that of front, change their color
+                        for nb := range g.edges[front] </span><span class="cov8" title="1">{
+                                if vertexColors[nb] == vertexColors[front] </span><span class="cov8" title="1">{
+                                        vertexColors[nb]++
+                                }</span>
+                                // if the neighbour is not already visited, add it to the queue
+                                <span class="cov8" title="1">if _, ok := visited[nb]; !ok </span><span class="cov8" title="1">{
+                                        visited[nb] = struct{}{}
+                                        queue.PushBack(nb)
+                                }</span>
+                        }
+                }
+        }
+
+        <span class="cov8" title="1">colorsUsed := 0
+        for _, cr := range vertexColors </span><span class="cov8" title="1">{
+                if colorsUsed &lt; int(cr) </span><span class="cov8" title="1">{
+                        colorsUsed = int(cr)
+                }</span>
+        }
+        <span class="cov8" title="1">return vertexColors, colorsUsed</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package coloring
+
+func (g *Graph) TryBipartiteColoring() map[int]Color <span class="cov8" title="1">{
+        // 0 is uncolored, 1/2 is colors
+        colors := make(map[int]Color)
+        visited := make(map[int]bool)
+
+        for i := range g.edges </span><span class="cov8" title="1">{
+                colors[i] = 0
+                visited[i] = false
+        }</span>
+
+        <span class="cov8" title="1">var color_node func(int)
+        color_node = func(s int) </span><span class="cov8" title="1">{
+                visited[s] = true
+                coloring := []Color{0, 2, 1}
+
+                for n := range g.edges[s] </span><span class="cov8" title="1">{
+                        if colors[n] == 0 </span><span class="cov8" title="1">{
+                                colors[n] = coloring[colors[s]]
+                        }</span>
+                        <span class="cov8" title="1">if !visited[n] </span><span class="cov8" title="1">{
+                                color_node(n)
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">for i := range g.edges </span><span class="cov8" title="1">{
+                if colors[i] == 0 </span><span class="cov8" title="1">{
+                        colors[i] = 1
+                        color_node(i)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return colors</span>
+}
+
+// basically tries to color the graph in two colors if each edge
+// connects 2 differently colored nodes the graph can be considered bipartite
+func BipartiteCheck(N int, edges [][]int) bool <span class="cov8" title="1">{
+        var graph Graph
+        for i := 0; i &lt; N; i++ </span><span class="cov8" title="1">{
+                graph.AddVertex(i)
+        }</span>
+        <span class="cov8" title="1">for _, e := range edges </span><span class="cov8" title="1">{
+                graph.AddEdge(e[0], e[1])
+        }</span>
+        <span class="cov8" title="1">return graph.ValidateColorsOfVertex(graph.TryBipartiteColoring()) == nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">// This file contains the simple structural implementation of undirected
+// graph, used in coloring algorithms.
+// Author(s): [Shivam](https://github.com/Shivam010)
+
+package coloring
+
+import "errors"
+
+// Color provides a type for vertex color
+type Color int
+
+// Graph provides a structure to store an undirected graph.
+// It is safe to use its empty object.
+type Graph struct {
+        vertices int
+        edges    map[int]map[int]struct{}
+}
+
+// AddVertex will add a new vertex in the graph, if the vertex already
+// exist it will do nothing
+func (g *Graph) AddVertex(v int) <span class="cov8" title="1">{
+        if g.edges == nil </span><span class="cov8" title="1">{
+                g.edges = make(map[int]map[int]struct{})
+        }</span>
+
+        // Check if vertex is present or not
+        <span class="cov8" title="1">if _, ok := g.edges[v]; !ok </span><span class="cov8" title="1">{
+                g.vertices++
+                g.edges[v] = make(map[int]struct{})
+        }</span>
+}
+
+// AddEdge will add a new edge between the provided vertices in the graph
+func (g *Graph) AddEdge(one, two int) <span class="cov8" title="1">{
+        // Add vertices: one and two to the graph if they are not present
+        g.AddVertex(one)
+        g.AddVertex(two)
+
+        // and finally add the edges: one-&gt;two and two-&gt;one for undirected graph
+        g.edges[one][two] = struct{}{}
+        g.edges[two][one] = struct{}{}
+}</span>
+
+func (g *Graph) ValidateColorsOfVertex(colors map[int]Color) error <span class="cov8" title="1">{
+        if g.vertices != len(colors) </span><span class="cov8" title="1">{
+                return errors.New("coloring: not all vertices of graph are colored")
+        }</span>
+        // check colors
+        <span class="cov8" title="1">for vertex, neighbours := range g.edges </span><span class="cov8" title="1">{
+                for nb := range neighbours </span><span class="cov8" title="1">{
+                        if colors[vertex] == colors[nb] </span><span class="cov8" title="1">{
+                                return errors.New("coloring: same colors of neighbouring vertex")
+                        }</span>
+                }
+        }
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">// This file contains the graph coloring implementation using Greedy Approach.
+// Author(s): [Shivam](https://github.com/Shivam010)
+
+package coloring
+
+import "sort"
+
+// ColorUsingGreedyApproach will return the Color of each vertex and the
+// total number of different colors used, using a greedy approach, based on
+// the number of edges (or degree) from any vertex.
+func (g *Graph) ColorUsingGreedyApproach() (map[int]Color, int) <span class="cov8" title="1">{
+        degreeOfVertex := make([]struct{ degree, vertex int }, 0, g.vertices)
+        for v, neighbours := range g.edges </span><span class="cov8" title="1">{
+                degreeOfVertex = append(degreeOfVertex,
+                        struct{ degree, vertex int }{
+                                vertex: v,
+                                degree: len(neighbours),
+                        },
+                )
+        }</span>
+        // sort the degreeOfVertex in decreasing order of degrees
+        <span class="cov8" title="1">sort.Slice(degreeOfVertex, func(i, j int) bool </span><span class="cov8" title="1">{
+                return degreeOfVertex[i].degree &gt; degreeOfVertex[j].degree
+        }</span>)
+
+        <span class="cov8" title="1">vertexColors := make(map[int]Color, g.vertices)
+        // Start with a color and assign the color to all possible vertices in the degreeOfVertex slice
+        // and then, re-iterate with new color for all those which are left
+        for color := 1; color &lt;= g.vertices; color++ </span><span class="cov8" title="1">{
+        vertexLoop:
+                for _, val := range degreeOfVertex </span><span class="cov8" title="1">{
+                        // skip, if already assigned
+                        if _, ok := vertexColors[val.vertex]; ok </span><span class="cov8" title="1">{
+                                continue vertexLoop</span>
+                        }
+                        // Check its neighbours
+                        <span class="cov8" title="1">for ng := range g.edges[val.vertex] </span><span class="cov8" title="1">{
+                                if vertexColors[ng] == Color(color) </span><span class="cov8" title="1">{
+                                        // not possible to use this color for val.vertex
+                                        continue vertexLoop</span>
+                                }
+                        }
+                        // Assign color to the vertex
+                        <span class="cov8" title="1">vertexColors[val.vertex] = Color(color)</span>
+                }
+                // continue till all the vertices are colored
+                <span class="cov8" title="1">if len(vertexColors) == g.vertices </span><span class="cov8" title="1">{
+                        return vertexColors, color
+                }</span>
+        }
+        <span class="cov0" title="0">return vertexColors, g.vertices</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">// cycle.go
+// this file handle algorithm that related to cycle in graph
+// reference: https://en.wikipedia.org/wiki/Cycle_(graph_theory)
+// [kiarash hajian](https://github.com/kiarash8112)
+
+package graph
+
+func (g *Graph) HasCycle() bool <span class="cov8" title="1">{
+        //this implimetation referred as 3-color too
+        all := map[int]struct{}{}
+        visiting := map[int]struct{}{}
+        visited := map[int]struct{}{}
+
+        for v := range g.edges </span><span class="cov8" title="1">{
+                all[v] = struct{}{}
+        }</span>
+
+        <span class="cov8" title="1">for current := range all </span><span class="cov8" title="1">{
+                if g.hasCycleHelper(current, all, visiting, visited) </span><span class="cov8" title="1">{
+                        return true
+                }</span>
+        }
+
+        <span class="cov8" title="1">return false</span>
+
+}
+
+func (g Graph) hasCycleHelper(v int, all, visiting, visited map[int]struct{}) bool <span class="cov8" title="1">{
+        delete(all, v)
+        visiting[v] = struct{}{}
+
+        neighbors := g.edges[v]
+        for v := range neighbors </span><span class="cov8" title="1">{
+                if _, ok := visited[v]; ok </span><span class="cov8" title="1">{
+                        continue</span>
+                } else<span class="cov8" title="1"> if _, ok := visiting[v]; ok </span><span class="cov8" title="1">{
+                        return true
+                }</span> else<span class="cov8" title="1"> if g.hasCycleHelper(v, all, visiting, visited) </span><span class="cov8" title="1">{
+                        return true
+                }</span>
+        }
+        <span class="cov8" title="1">delete(visiting, v)
+        visited[v] = struct{}{}
+        return false</span>
+}
+
+// this function can do HasCycle() job but it is slower
+func (g *Graph) FindAllCycles() []Graph <span class="cov8" title="1">{
+        all := map[int]struct{}{}
+        visiting := map[int]struct{}{}
+        visited := map[int]struct{}{}
+
+        allCycles := []Graph{}
+
+        for v := range g.edges </span><span class="cov8" title="1">{
+                all[v] = struct{}{}
+        }</span>
+
+        <span class="cov8" title="1">for current := range all </span><span class="cov8" title="1">{
+                foundCycle, parents := g.findAllCyclesHelper(current, all, visiting, visited)
+
+                if foundCycle </span><span class="cov8" title="1">{
+                        foundCycleFromCurrent := false
+                        //this loop remove additional vertex from detected cycle
+                        //using foundCycleFromCurrent bool to make sure after removing vertex we still have cycle
+                        for i := len(parents) - 1; i &gt; 0; i-- </span><span class="cov8" title="1">{
+                                if parents[i][1] == parents[0][0] </span><span class="cov8" title="1">{
+                                        parents = parents[:i+1]
+                                        foundCycleFromCurrent = true
+                                }</span>
+                        }
+                        <span class="cov8" title="1">if foundCycleFromCurrent </span><span class="cov8" title="1">{
+                                graph := Graph{Directed: true}
+                                for _, edges := range parents </span><span class="cov8" title="1">{
+                                        graph.AddEdge(edges[1], edges[0])
+                                }</span>
+                                <span class="cov8" title="1">allCycles = append(allCycles, graph)</span>
+                        }
+
+                }
+
+        }
+
+        <span class="cov8" title="1">return allCycles</span>
+
+}
+
+func (g Graph) findAllCyclesHelper(current int, all, visiting, visited map[int]struct{}) (bool, [][]int) <span class="cov8" title="1">{
+        parents := [][]int{}
+
+        delete(all, current)
+        visiting[current] = struct{}{}
+
+        neighbors := g.edges[current]
+        for v := range neighbors </span><span class="cov8" title="1">{
+                if _, ok := visited[v]; ok </span><span class="cov0" title="0">{
+                        continue</span>
+                } else<span class="cov8" title="1"> if _, ok := visiting[v]; ok </span><span class="cov8" title="1">{
+                        parents = append(parents, []int{v, current})
+                        return true, parents
+                }</span> else<span class="cov8" title="1"> if ok, savedParents := g.findAllCyclesHelper(v, all, visiting, visited); ok </span><span class="cov8" title="1">{
+                        parents = append(parents, savedParents...)
+                        parents = append(parents, []int{v, current})
+                        return true, parents
+                }</span>
+        }
+        <span class="cov0" title="0">delete(visiting, current)
+        visited[current] = struct{}{}
+        return false, parents</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package graph
+
+func GetIdx(target int, nodes []int) int <span class="cov8" title="1">{
+        for i := 0; i &lt; len(nodes); i++ </span><span class="cov8" title="1">{
+                if nodes[i] == target </span><span class="cov8" title="1">{
+                        return i
+                }</span>
+        }
+        <span class="cov0" title="0">return -1</span>
+}
+
+func NotExist(target int, slice []int) bool <span class="cov8" title="1">{
+        for i := 0; i &lt; len(slice); i++ </span><span class="cov8" title="1">{
+                if slice[i] == target </span><span class="cov8" title="1">{
+                        return false
+                }</span>
+        }
+        <span class="cov8" title="1">return true</span>
+}
+
+func DepthFirstSearchHelper(start, end int, nodes []int, edges [][]bool, showroute bool) ([]int, bool) <span class="cov8" title="1">{
+        var route []int
+        var stack []int
+        startIdx := GetIdx(start, nodes)
+        stack = append(stack, startIdx)
+        for len(stack) &gt; 0 </span><span class="cov8" title="1">{
+                now := stack[len(stack)-1]
+                route = append(route, nodes[now])
+                if len(stack) &gt; 1 </span><span class="cov8" title="1">{
+                        stack = stack[:len(stack)-1]
+                }</span> else<span class="cov8" title="1"> {
+                        stack = stack[:len(stack)-1]
+                }</span>
+                <span class="cov8" title="1">for i := 0; i &lt; len(edges[now]); i++ </span><span class="cov8" title="1">{
+                        if edges[now][i] &amp;&amp; NotExist(i, stack) </span><span class="cov8" title="1">{
+                                stack = append(stack, i)
+                        }</span>
+                        <span class="cov8" title="1">edges[now][i] = false
+                        edges[i][now] = false</span>
+                }
+                <span class="cov8" title="1">if route[len(route)-1] == end </span><span class="cov8" title="1">{
+                        return route, true
+                }</span>
+        }
+
+        <span class="cov8" title="1">if showroute </span><span class="cov8" title="1">{
+                return route, false
+        }</span> else<span class="cov8" title="1"> {
+                return nil, false
+        }</span>
+}
+
+func DepthFirstSearch(start, end int, nodes []int, edges [][]bool) ([]int, bool) <span class="cov8" title="1">{
+        return DepthFirstSearchHelper(start, end, nodes, edges, false)
+}</span>
+
+// func main() {
+//         nodes := []int{
+//                 1, 2, 3, 4, 5, 6,
+//         }
+//         /*
+//                 sample graph
+//                 ①-②
+//                 |  |
+//                 ③-④-⑤-⑥
+//         */
+//         edges := [][]bool{
+//                 {false, true, true, false, false, false},
+//                 {true, false, false, true, false, false},
+//                 {true, false, false, true, false, false},
+//                 {false, true, true, false, true, false},
+//                 {false, false, false, true, false, true},
+//                 {false, false, false, false, true, false},
+//         }
+//         start := 1
+//         end := 6
+//         route, _ := dfs(start, end, nodes, edges)
+//         fmt.Println(route)
+// }
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package graph
+
+import "github.com/TheAlgorithms/Go/sort"
+
+type Item struct {
+        node int
+        dist int
+}
+
+func (a Item) More(b any) bool <span class="cov8" title="1">{
+        // reverse direction for minheap
+        return a.dist &lt; b.(Item).dist
+}</span>
+func (a Item) Idx() int <span class="cov8" title="1">{
+        return a.node
+}</span>
+
+func (g *Graph) Dijkstra(start, end int) (int, bool) <span class="cov8" title="1">{
+        visited := make(map[int]bool)
+        nodes := make(map[int]*Item)
+
+        nodes[start] = &amp;Item{
+                dist: 0,
+                node: start,
+        }
+        pq := sort.MaxHeap{}
+        pq.Init(nil)
+        pq.Push(*nodes[start])
+
+        visit := func(curr Item) </span><span class="cov8" title="1">{
+                visited[curr.node] = true
+                for n, d := range g.edges[curr.node] </span><span class="cov8" title="1">{
+                        if visited[n] </span><span class="cov8" title="1">{
+                                continue</span>
+                        }
+
+                        <span class="cov8" title="1">item := nodes[n]
+                        dist2 := curr.dist + d
+                        if item == nil </span><span class="cov8" title="1">{
+                                nodes[n] = &amp;Item{node: n, dist: dist2}
+                                pq.Push(*nodes[n])
+                        }</span> else<span class="cov8" title="1"> if item.dist &gt; dist2 </span><span class="cov8" title="1">{
+                                item.dist = dist2
+                                pq.Update(*item)
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">for pq.Size() &gt; 0 </span><span class="cov8" title="1">{
+                curr := pq.Pop().(Item)
+                if curr.node == end </span><span class="cov8" title="1">{
+                        break</span>
+                }
+                <span class="cov8" title="1">visit(curr)</span>
+        }
+
+        <span class="cov8" title="1">item := nodes[end]
+        if item == nil </span><span class="cov8" title="1">{
+                return -1, false
+        }</span>
+        <span class="cov8" title="1">return item.dist, true</span>
+}
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">// Floyd-Warshall algorithm
+// https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm
+
+package graph
+
+import "math"
+
+// WeightedGraph defining matrix to use 2d array easier
+type WeightedGraph [][]float64
+
+// Defining maximum value. If two vertices share this value, it means they are not connected
+var Inf = math.Inf(1)
+
+// FloydWarshall Returns all pair's shortest path using Floyd Warshall algorithm
+func FloydWarshall(graph WeightedGraph) WeightedGraph <span class="cov8" title="1">{
+        // If graph is empty, returns nil
+        if len(graph) == 0 || len(graph) != len(graph[0]) </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">for i := 0; i &lt; len(graph); i++ </span><span class="cov8" title="1">{
+                //If graph matrix width is different than the height, returns nil
+                if len(graph[i]) != len(graph) </span><span class="cov8" title="1">{
+                        return nil
+                }</span>
+        }
+
+        <span class="cov8" title="1">numVertices := len(graph)
+
+        // Initializing result matrix and filling it up with same values as given graph
+        result := make(WeightedGraph, numVertices)
+
+        for i := 0; i &lt; numVertices; i++ </span><span class="cov8" title="1">{
+                result[i] = make([]float64, numVertices)
+                for j := 0; j &lt; numVertices; j++ </span><span class="cov8" title="1">{
+                        result[i][j] = graph[i][j]
+                }</span>
+        }
+
+        // Running over the result matrix and following the algorithm
+        <span class="cov8" title="1">for k := 0; k &lt; numVertices; k++ </span><span class="cov8" title="1">{
+                for i := 0; i &lt; numVertices; i++ </span><span class="cov8" title="1">{
+                        for j := 0; j &lt; numVertices; j++ </span><span class="cov8" title="1">{
+                                // If there is a less costly path from i to j node, remembering it
+                                if result[i][j] &gt; result[i][k]+result[k][j] </span><span class="cov8" title="1">{
+                                        result[i][j] = result[i][k] + result[k][j]
+                                }</span>
+                        }
+                }
+        }
+
+        <span class="cov8" title="1">return result</span>
+}
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">// This file contains the simple structural implementation of
+// directed &amp; undirected graphs used within the graph package
+// Author(s): [Shivam](https://github.com/Shivam010), [Tahmeed](https://github.com/Tahmeed156)
+
+package graph
+
+// Graph provides a structure to store the graph.
+// It is safe to use its empty object.
+type Graph struct {
+        vertices int
+        edges    map[int]map[int]int // Stores weight of an edge
+        Directed bool                // Differentiate directed/undirected graphs
+}
+
+// Constructor functions for graphs (undirected by default)
+func New(v int) *Graph <span class="cov8" title="1">{
+        return &amp;Graph{
+                vertices: v,
+        }
+}</span>
+
+// AddVertex will add a new vertex in the graph.
+// If the vertex already exists it will do nothing.
+func (g *Graph) AddVertex(v int) <span class="cov8" title="1">{
+        if g.edges == nil </span><span class="cov8" title="1">{
+                g.edges = make(map[int]map[int]int)
+        }</span>
+
+        // Check if vertex is present or not
+        <span class="cov8" title="1">if _, ok := g.edges[v]; !ok </span><span class="cov8" title="1">{
+                g.edges[v] = make(map[int]int)
+        }</span>
+}
+
+// AddEdge will add a new edge between the provided vertices in the graph
+func (g *Graph) AddEdge(one, two int) <span class="cov8" title="1">{
+        // Add an edge with 0 weight
+        g.AddWeightedEdge(one, two, 0)
+}</span>
+
+// AddWeightedEdge will add a new weighted edge between the provided vertices in the graph
+func (g *Graph) AddWeightedEdge(one, two, weight int) <span class="cov8" title="1">{
+        // Add vertices: one and two to the graph if they are not present
+        g.AddVertex(one)
+        g.AddVertex(two)
+
+        // And finally add the edges
+        // one-&gt;two and two-&gt;one for undirected graph
+        // one-&gt;two for directed graphs
+        g.edges[one][two] = weight
+        if !g.Directed </span><span class="cov8" title="1">{
+                g.edges[two][one] = weight
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">// KRUSKAL'S ALGORITHM
+// Reference: Kruskal's Algorithm: https://www.scaler.com/topics/data-structures/kruskal-algorithm/
+// Reference: Union Find Algorithm: https://www.scaler.com/topics/data-structures/disjoint-set/
+// Author: Author: Mugdha Behere[https://github.com/MugdhaBehere]
+// Worst Case Time Complexity: O(E log E), where E is the number of edges.
+// Worst Case Space Complexity: O(V + E), where V is the number of vertices and E is the number of edges.
+// see kruskal.go, kruskal_test.go
+
+package graph
+
+import (
+        "sort"
+)
+
+type Vertex int
+
+type Edge struct {
+        Start  Vertex
+        End    Vertex
+        Weight int
+}
+
+func KruskalMST(n int, edges []Edge) ([]Edge, int) <span class="cov8" title="1">{
+        // Initialize variables to store the minimum spanning tree and its total cost
+        var mst []Edge
+        var cost int
+
+        // Create a new UnionFind data structure with 'n' nodes
+        u := NewUnionFind(n)
+
+        // Initialize each node in the UnionFind data structure
+        for i := 0; i &lt; n; i++ </span><span class="cov8" title="1">{
+                u.parent[i] = i
+                u.size[i] = 1
+        }</span>
+
+        // Sort the edges in non-decreasing order based on their weights
+        <span class="cov8" title="1">sort.SliceStable(edges, func(i, j int) bool </span><span class="cov8" title="1">{
+                return edges[i].Weight &lt; edges[j].Weight
+        }</span>)
+
+        // Iterate through the sorted edges
+        <span class="cov8" title="1">for _, edge := range edges </span><span class="cov8" title="1">{
+                // Check if adding the current edge forms a cycle or not
+                if u.Find(int(edge.Start)) != u.Find(int(edge.End)) </span><span class="cov8" title="1">{
+                        // Add the edge to the minimum spanning tree
+                        mst = append(mst, edge)
+                        // Add the weight of the edge to the total cost
+                        cost += edge.Weight
+                        // Merge the sets containing the start and end vertices of the current edge
+                        u = u.Union(int(edge.Start), int(edge.End))
+                }</span>
+        }
+
+        // Return the minimum spanning tree and its total cost
+        <span class="cov8" title="1">return mst, cost</span>
+}
+</pre>
+		
+		<pre class="file" id="file14" style="display: none">// lowestcommonancestor.go
+// description: Implementation of Lowest common ancestor (LCA) algorithm.
+// detail:
+// Let `T` be a tree. The LCA of `u` and `v` in T is the shared ancestor of `u` and `v`
+// that is located farthest from the root.
+// references: [cp-algorithms](https://cp-algorithms.com/graph/lca_binary_lifting.html)
+// author(s) [Dat](https://github.com/datbeohbbh)
+// see lowestcommonancestor_test.go for a test implementation.
+
+package graph
+
+type TreeEdge struct {
+        from int
+        to   int
+}
+
+type ITree interface {
+        dfs(int, int)
+        addEdge(int, int)
+        GetDepth(int) int
+        GetDad(int) int
+        GetLCA(int, int) int
+}
+
+type Tree struct {
+        numbersVertex int
+        root          int
+        MAXLOG        int
+        depth         []int
+        dad           []int
+        jump          [][]int
+        edges         [][]int
+}
+
+func (tree *Tree) addEdge(u, v int) <span class="cov8" title="1">{
+        tree.edges[u] = append(tree.edges[u], v)
+        tree.edges[v] = append(tree.edges[v], u)
+}</span>
+
+func (tree *Tree) dfs(u, par int) <span class="cov8" title="1">{
+        tree.jump[0][u] = par
+        tree.dad[u] = par
+        for _, v := range tree.edges[u] </span><span class="cov8" title="1">{
+                if v != par </span><span class="cov8" title="1">{
+                        tree.depth[v] = tree.depth[u] + 1
+                        tree.dfs(v, u)
+                }</span>
+        }
+}
+
+func (tree *Tree) GetDepth(u int) int <span class="cov8" title="1">{
+        return tree.depth[u]
+}</span>
+
+func (tree *Tree) GetDad(u int) int <span class="cov8" title="1">{
+        return tree.dad[u]
+}</span>
+
+func (tree *Tree) GetLCA(u, v int) int <span class="cov8" title="1">{
+        if tree.GetDepth(u) &lt; tree.GetDepth(v) </span><span class="cov8" title="1">{
+                u, v = v, u
+        }</span>
+
+        <span class="cov8" title="1">for j := tree.MAXLOG - 1; j &gt;= 0; j-- </span><span class="cov8" title="1">{
+                if tree.GetDepth(tree.jump[j][u]) &gt;= tree.GetDepth(v) </span><span class="cov8" title="1">{
+                        u = tree.jump[j][u]
+                }</span>
+        }
+
+        <span class="cov8" title="1">if u == v </span><span class="cov8" title="1">{
+                return u
+        }</span>
+
+        <span class="cov8" title="1">for j := tree.MAXLOG - 1; j &gt;= 0; j-- </span><span class="cov8" title="1">{
+                if tree.jump[j][u] != tree.jump[j][v] </span><span class="cov8" title="1">{
+                        u = tree.jump[j][u]
+                        v = tree.jump[j][v]
+                }</span>
+        }
+
+        <span class="cov8" title="1">return tree.jump[0][u]</span>
+}
+
+func NewTree(numbersVertex, root int, edges []TreeEdge) (tree *Tree) <span class="cov8" title="1">{
+        tree = new(Tree)
+        tree.numbersVertex, tree.root, tree.MAXLOG = numbersVertex, root, 0
+        tree.depth = make([]int, numbersVertex)
+        tree.dad = make([]int, numbersVertex)
+
+        for (1 &lt;&lt; tree.MAXLOG) &lt;= numbersVertex </span><span class="cov8" title="1">{
+                (tree.MAXLOG) += 1
+        }</span>
+        <span class="cov8" title="1">(tree.MAXLOG) += 1
+
+        tree.jump = make([][]int, tree.MAXLOG)
+        for j := 0; j &lt; tree.MAXLOG; j++ </span><span class="cov8" title="1">{
+                tree.jump[j] = make([]int, numbersVertex)
+        }</span>
+
+        <span class="cov8" title="1">tree.edges = make([][]int, numbersVertex)
+        for _, e := range edges </span><span class="cov8" title="1">{
+                tree.addEdge(e.from, e.to)
+        }</span>
+
+        <span class="cov8" title="1">return tree</span>
+}
+
+// For each node, we will precompute its ancestor above him, its ancestor two nodes above, its ancestor four nodes above, etc.
+// Let's call `jump[j][u]` is the `2^j`-th ancestor above the node `u` with `u` in range `[0, numbersVertex)`, `j` in range `[0,MAXLOG)`.
+// These information allow us to jump from any node to any ancestor above it in `O(MAXLOG)` time.
+func LowestCommonAncestor(tree *Tree) <span class="cov8" title="1">{
+        // call dfs to compute depth from the root to each node and the parent of each node.
+        tree.dfs(tree.root, tree.root)
+
+        // compute jump[j][u]
+        for j := 1; j &lt; tree.MAXLOG; j++ </span><span class="cov8" title="1">{
+                for u := 0; u &lt; tree.numbersVertex; u++ </span><span class="cov8" title="1">{
+                        tree.jump[j][u] = tree.jump[j-1][tree.jump[j-1][u]]
+                }</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file15" style="display: none">package graph
+
+// Topological assumes that graph given is valid and that its
+// possible to get a topological ordering.
+// constraints are array of []int{a, b}, representing
+// an edge going from a to b
+func Topological(N int, constraints [][]int) []int <span class="cov8" title="1">{
+        dependencies := make([]int, N)
+        nodes := make([]int, N)
+        for i := range nodes </span><span class="cov8" title="1">{
+                nodes[i] = i
+        }</span>
+        <span class="cov8" title="1">edges := make([][]bool, N)
+        for i := range edges </span><span class="cov8" title="1">{
+                edges[i] = make([]bool, N)
+        }</span>
+
+        <span class="cov8" title="1">for _, c := range constraints </span><span class="cov8" title="1">{
+                a := c[0]
+                b := c[1]
+                dependencies[b]++
+                edges[a][b] = true
+        }</span>
+
+        <span class="cov8" title="1">var answer []int
+        for s := 0; s &lt; N; s++ </span><span class="cov8" title="1">{
+                // Only start walking from top level nodes
+                if dependencies[s] == 0 </span><span class="cov8" title="1">{
+                        route, _ := DepthFirstSearchHelper(s, N, nodes, edges, true)
+                        answer = append(answer, route...)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return answer</span>
+}
+</pre>
+		
+		<pre class="file" id="file16" style="display: none">// Union Find Algorithm or Dynamic Connectivity algorithm, often implemented with the help
+//of the union find data structure,
+// is used to efficiently maintain connected components in a graph that undergoes dynamic changes,
+// such as edges being added or removed over time
+// Worst Case Time Complexity: The time complexity of find operation is nearly constant or
+//O(α(n)), where where α(n) is the inverse Ackermann function
+// practically, this is a very slowly growing function making the time complexity for find
+//operation nearly constant.
+// The time complexity of the union operation is also nearly constant or O(α(n))
+// Worst Case Space Complexity: O(n), where n is the number of nodes or element in the structure
+// Reference: https://www.scaler.com/topics/data-structures/disjoint-set/
+// Author: Mugdha Behere[https://github.com/MugdhaBehere]
+// see: unionfind.go, unionfind_test.go
+
+package graph
+
+// Defining the union-find data structure
+type UnionFind struct {
+        parent []int
+        size   []int
+}
+
+// Initialise a new union find data structure with s nodes
+func NewUnionFind(s int) UnionFind <span class="cov8" title="1">{
+        parent := make([]int, s)
+        size := make([]int, s)
+        for k := 0; k &lt; s; k++ </span><span class="cov8" title="1">{
+                parent[k] = k
+                size[k] = 1
+        }</span>
+        <span class="cov8" title="1">return UnionFind{parent, size}</span>
+}
+
+// to find the root of the set to which the given element belongs, the Find function serves the purpose
+func (u UnionFind) Find(q int) int <span class="cov8" title="1">{
+        for q != u.parent[q] </span><span class="cov8" title="1">{
+                q = u.parent[q]
+        }</span>
+        <span class="cov8" title="1">return q</span>
+}
+
+// to merge two sets to which the given elements belong, the Union function serves the purpose
+func (u UnionFind) Union(a, b int) UnionFind <span class="cov8" title="1">{
+        rootP := u.Find(a)
+        rootQ := u.Find(b)
+
+        if rootP == rootQ </span><span class="cov8" title="1">{
+                return u
+        }</span>
+
+        <span class="cov8" title="1">if u.size[rootP] &lt; u.size[rootQ] </span><span class="cov8" title="1">{
+                u.parent[rootP] = rootQ
+                u.size[rootQ] += u.size[rootP]
+        }</span> else<span class="cov8" title="1"> {
+                u.parent[rootQ] = rootP
+                u.size[rootP] += u.size[rootQ]
+        }</span>
+        <span class="cov8" title="1">return u</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
